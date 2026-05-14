@@ -11,5 +11,6 @@ RUN npm run build
 
 EXPOSE 3000
 
-CMD ["npm", "run", "start"]
+ENV HOSTNAME=0.0.0.0
 
+CMD ["npm", "run", "start"]
