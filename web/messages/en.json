@@ -1,0 +1,54 @@
+{
+  "appName": "PixelSave",
+  "tagline": "Simple downloads for your browser",
+  "heroTitle": "Paste your link and download.",
+  "heroDescription": "Save public videos, images, and stories in a few steps. No extra dashboard, just the link and your history.",
+  "language": {
+    "label": "Language",
+    "es": "ES",
+    "en": "EN",
+    "pt": "PT"
+  },
+  "composer": {
+    "title": "Download content",
+    "description": "Enter a public URL and wait for the file to become available.",
+    "placeholder": "Paste the link here",
+    "submitIdle": "Download",
+    "submitBusy": "Preparing download...",
+    "helperItems": [
+      "Works best with public links.",
+      "Your history is only stored in this browser.",
+      "Files expire after 24 hours."
+    ]
+  },
+  "history": {
+    "title": "History",
+    "description": "Your recent downloads in this browser.",
+    "empty": "There are no downloads on this device yet.",
+    "download": "Download file",
+    "source": "Source",
+    "size": "Size",
+    "created": "Created",
+    "status": "Status",
+    "searchPlaceholder": "Search your history",
+    "filters": {
+      "all": "All",
+      "queued": "Queued",
+      "processing": "Processing",
+      "completed": "Ready",
+      "failed": "Failed"
+    }
+  },
+  "errors": {
+    "loadJobs": "Could not load history",
+    "createJob": "Could not create download",
+    "unexpected": "Unexpected error",
+    "missingClientId": "Could not identify this browser"
+  },
+  "statusLabels": {
+    "queued": "Queued",
+    "processing": "Processing",
+    "completed": "Completed",
+    "failed": "Failed"
+  }
+}

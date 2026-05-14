@@ -1,0 +1,54 @@
+{
+  "appName": "PixelSave",
+  "tagline": "Descargas simples para tu navegador",
+  "heroTitle": "Pega tu enlace y descarga.",
+  "heroDescription": "Guarda videos, imagenes e historias publicas en pocos pasos. Sin paneles innecesarios, solo el enlace y tu historial.",
+  "language": {
+    "label": "Idioma",
+    "es": "ES",
+    "en": "EN",
+    "pt": "PT"
+  },
+  "composer": {
+    "title": "Descargar contenido",
+    "description": "Introduce una URL publica y espera a que el archivo quede listo.",
+    "placeholder": "Pega aqui el enlace",
+    "submitIdle": "Descargar",
+    "submitBusy": "Preparando descarga...",
+    "helperItems": [
+      "Funciona mejor con enlaces publicos.",
+      "Tu historial solo se guarda en este navegador.",
+      "Los archivos expiran despues de 24 horas."
+    ]
+  },
+  "history": {
+    "title": "Historial",
+    "description": "Tus descargas recientes en este navegador.",
+    "empty": "Todavia no hay descargas en este dispositivo.",
+    "download": "Descargar archivo",
+    "source": "Origen",
+    "size": "Tamano",
+    "created": "Creado",
+    "status": "Estado",
+    "searchPlaceholder": "Buscar en tu historial",
+    "filters": {
+      "all": "Todos",
+      "queued": "En cola",
+      "processing": "Procesando",
+      "completed": "Listos",
+      "failed": "Fallidos"
+    }
+  },
+  "errors": {
+    "loadJobs": "No se pudo cargar el historial",
+    "createJob": "No se pudo crear la descarga",
+    "unexpected": "Error inesperado",
+    "missingClientId": "No se pudo identificar este navegador"
+  },
+  "statusLabels": {
+    "queued": "En cola",
+    "processing": "Procesando",
+    "completed": "Completado",
+    "failed": "Fallido"
+  }
+}

@@ -1,0 +1,17 @@
+.next
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.venv/
+.env.*
+node_modules/
+dist/
+.env
+downloads/
+coverage/
+*.log
+Thumbs.db
+.DS_Store
+
