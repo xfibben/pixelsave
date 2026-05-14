@@ -52,7 +52,7 @@ services:
       STORAGE_SECRET_KEY: ${MINIO_ROOT_PASSWORD:-minioadmin}
       STORAGE_BUCKET: pixelsave-downloads
       STORAGE_SECURE: "false"
-      CORS_ORIGINS: http://localhost:1234
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:1234}
     depends_on:
       postgres:
         condition: service_healthy
@@ -87,8 +87,12 @@ services:
   web:
     build:
       context: ./web
+      args:
+        NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL:-}
     depends_on:
       - api
+    environment:
+      NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL:-}
     ports:
       - "1234:3000"
 
