@@ -28,6 +28,10 @@ class Settings(BaseSettings):
 
     max_job_age_hours: int = 24
     yt_dlp_timeout_seconds: int = 900
+    yt_dlp_retries: int = 3
+    yt_dlp_impersonate: str | None = "chrome"
+    yt_dlp_cookies_file: str | None = None
+    instagram_app_id: str = "936619743392459"
 
     @property
     def cors_origin_list(self) -> list[str]:
@@ -37,4 +41,3 @@ class Settings(BaseSettings):
 @lru_cache
 def get_settings() -> Settings:
     return Settings()
-

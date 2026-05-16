@@ -41,10 +41,19 @@ docker compose up --build
 ## Limitaciones del MVP
 
 - Solo pensado para contenido publico.
-- No maneja login, cookies de navegador ni sesiones privadas.
+- No maneja login interactivo ni cookies de navegador del host.
+- Se puede configurar un `cookies.txt` opcional via `YT_DLP_COOKIES_FILE` para casos donde una plataforma degrade el acceso anonimo.
 - No hay autenticacion ni rate limiting todavia.
 - La separacion por "usuario" es por navegador/dispositivo mediante un identificador local persistente.
 - Los jobs y archivos expiran a las 24 horas.
+
+## Notas para Instagram
+
+- El worker ahora usa `yt-dlp` con `impersonation`, reintentos y headers web especificos de Instagram para mejorar la descarga anonima de reels y posts publicos.
+- Si Instagram responde con `login required`, `rate-limit reached` o `unable to extract video url`, lo siguiente a revisar es:
+  - actualizar la imagen para tomar una version mas reciente de `yt-dlp`
+  - verificar que `curl-cffi` este instalado dentro del contenedor
+  - montar un `cookies.txt` opcional en `YT_DLP_COOKIES_FILE` para los casos que Meta no entregue bien el media URL de forma anonima
 
 ## Nota de cumplimiento
 

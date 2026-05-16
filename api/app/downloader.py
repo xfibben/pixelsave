@@ -43,6 +43,62 @@ def _guess_content_type(file_path: Path) -> str:
     return content_type or "application/octet-stream"
 
 
+def _common_command(output_template: Path, source_url: str, settings) -> list[str]:
+    command = [
+        "yt-dlp",
+        "--no-playlist",
+        "--restrict-filenames",
+        "--newline",
+        "--print",
+        "after_move:filepath",
+        "--merge-output-format",
+        "mp4",
+        "--retries",
+        str(settings.yt_dlp_retries),
+        "--fragment-retries",
+        str(settings.yt_dlp_retries),
+        "--extractor-retries",
+        str(settings.yt_dlp_retries),
+        "--socket-timeout",
+        "30",
+        "-o",
+        str(output_template),
+    ]
+    if settings.yt_dlp_impersonate:
+        command.extend(["--impersonate", settings.yt_dlp_impersonate])
+    if settings.yt_dlp_cookies_file:
+        command.extend(["--cookies", settings.yt_dlp_cookies_file])
+    command.append(source_url)
+    return command
+
+
+def _platform_attempts(output_template: Path, source_url: str, settings, platform: str) -> list[tuple[str, list[str]]]:
+    attempts: list[tuple[str, list[str]]] = []
+
+    generic = _common_command(output_template, source_url, settings)
+    attempts.append(("generic", generic))
+
+    if platform == "instagram":
+        instagram = _common_command(output_template, source_url, settings)
+        instagram[-1:-1] = [
+            "--add-header",
+            "Referer:https://www.instagram.com/",
+            "--add-header",
+            "Origin:https://www.instagram.com",
+            "--add-header",
+            f"X-IG-App-ID:{settings.instagram_app_id}",
+            "--add-header",
+            "Accept-Language:en-US,en;q=0.9",
+        ]
+        instagram[-1:-1] = [
+            "--extractor-args",
+            f"instagram:app_id={settings.instagram_app_id}",
+        ]
+        attempts.insert(0, ("instagram-web", instagram))
+
+    return attempts
+
+
 def _set_job_status(db: Session, job: DownloadJob, status: str, error_message: str | None = None) -> None:
     job.status = status
     job.error_message = error_message
@@ -71,33 +127,28 @@ def process_job(job_id: str) -> None:
         with TemporaryDirectory(prefix=f"pixelsave-{job_id}-") as temp_dir:
             temp_path = Path(temp_dir)
             output_template = temp_path / "%(title).120B-%(id)s.%(ext)s"
-            command = [
-                "yt-dlp",
-                "--no-playlist",
-                "--restrict-filenames",
-                "--newline",
-                "--print",
-                "after_move:filepath",
-                "--merge-output-format",
-                "mp4",
-                "-o",
-                str(output_template),
-                job.source_url,
-            ]
+            attempts = _platform_attempts(output_template, job.source_url, settings, detect_platform(job.source_url))
+            errors: list[str] = []
+            downloaded_file: Path | None = None
 
-            result = subprocess.run(
-                command,
-                check=False,
-                capture_output=True,
-                text=True,
-                timeout=settings.yt_dlp_timeout_seconds,
-            )
+            for label, command in attempts:
+                result = subprocess.run(
+                    command,
+                    check=False,
+                    capture_output=True,
+                    text=True,
+                    timeout=settings.yt_dlp_timeout_seconds,
+                )
+                combined_output = "\n".join(part for part in [result.stdout, result.stderr] if part).strip()
+                if result.returncode == 0:
+                    downloaded_file = _extract_downloaded_file(combined_output)
+                    break
 
-            combined_output = "\n".join(part for part in [result.stdout, result.stderr] if part)
-            if result.returncode != 0:
-                raise RuntimeError(combined_output.strip() or "yt-dlp fallo sin devolver error legible")
+                errors.append(f"[{label}] {combined_output or 'yt-dlp fallo sin devolver error legible'}")
 
-            downloaded_file = _extract_downloaded_file(combined_output)
+            if downloaded_file is None:
+                raise RuntimeError("\n\n".join(errors) or "yt-dlp fallo sin devolver error legible")
+
             if not downloaded_file.exists():
                 raise RuntimeError("El archivo descargado no existe despues de yt-dlp")
 
