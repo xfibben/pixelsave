@@ -60,6 +60,7 @@ docker compose up --build
 
 - Si quieres una tasa de exito alta con reels publicos, prepara al menos una de estas dos opciones:
   - `YT_DLP_COOKIES_FILE` apuntando a un `cookies.txt` vigente exportado desde una sesion real de Instagram
+  - `YT_DLP_COOKIES_TEXT` o `YT_DLP_COOKIES_BASE64` si tu plataforma de despliegue maneja mejor secretos por variables de entorno
   - `YT_DLP_PROXY` apuntando a una IP/proxy limpia que no este limitada por Meta
 - Sin cookies ni proxy, la descarga anonima de Instagram debe considerarse opportunista: algunos enlaces funcionaran y otros no.
 

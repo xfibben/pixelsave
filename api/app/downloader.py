@@ -1,5 +1,6 @@
 import mimetypes
 import subprocess
+from base64 import b64decode
 from datetime import UTC, datetime
 from pathlib import Path
 from tempfile import TemporaryDirectory
@@ -43,7 +44,22 @@ def _guess_content_type(file_path: Path) -> str:
     return content_type or "application/octet-stream"
 
 
-def _common_command(output_template: Path, source_url: str, settings) -> list[str]:
+def _resolve_cookies_file(settings, temp_path: Path) -> str | None:
+    if settings.yt_dlp_cookies_file:
+        return settings.yt_dlp_cookies_file
+    if settings.yt_dlp_cookies_text:
+        cookies_path = temp_path / "cookies.txt"
+        cookies_path.write_text(settings.yt_dlp_cookies_text, encoding="utf-8")
+        return str(cookies_path)
+    if settings.yt_dlp_cookies_base64:
+        cookies_path = temp_path / "cookies.txt"
+        decoded = b64decode(settings.yt_dlp_cookies_base64).decode("utf-8")
+        cookies_path.write_text(decoded, encoding="utf-8")
+        return str(cookies_path)
+    return None
+
+
+def _common_command(output_template: Path, source_url: str, settings, cookies_file: str | None) -> list[str]:
     command = [
         "yt-dlp",
         "--no-playlist",
@@ -66,8 +82,8 @@ def _common_command(output_template: Path, source_url: str, settings) -> list[st
     ]
     if settings.yt_dlp_impersonate:
         command.extend(["--impersonate", settings.yt_dlp_impersonate])
-    if settings.yt_dlp_cookies_file:
-        command.extend(["--cookies", settings.yt_dlp_cookies_file])
+    if cookies_file:
+        command.extend(["--cookies", cookies_file])
     if settings.yt_dlp_proxy:
         command.extend(["--proxy", settings.yt_dlp_proxy])
     if settings.yt_dlp_source_address:
@@ -76,14 +92,16 @@ def _common_command(output_template: Path, source_url: str, settings) -> list[st
     return command
 
 
-def _platform_attempts(output_template: Path, source_url: str, settings, platform: str) -> list[tuple[str, list[str]]]:
+def _platform_attempts(
+    output_template: Path, source_url: str, settings, platform: str, cookies_file: str | None
+) -> list[tuple[str, list[str]]]:
     attempts: list[tuple[str, list[str]]] = []
 
-    generic = _common_command(output_template, source_url, settings)
+    generic = _common_command(output_template, source_url, settings, cookies_file)
     attempts.append(("generic", generic))
 
     if platform == "instagram":
-        instagram = _common_command(output_template, source_url, settings)
+        instagram = _common_command(output_template, source_url, settings, cookies_file)
         instagram[-1:-1] = [
             "--add-header",
             "Referer:https://www.instagram.com/",
@@ -149,8 +167,11 @@ def process_job(job_id: str) -> None:
 
         with TemporaryDirectory(prefix=f"pixelsave-{job_id}-") as temp_dir:
             temp_path = Path(temp_dir)
+            cookies_file = _resolve_cookies_file(settings, temp_path)
             output_template = temp_path / "%(title).120B-%(id)s.%(ext)s"
-            attempts = _platform_attempts(output_template, job.source_url, settings, detect_platform(job.source_url))
+            attempts = _platform_attempts(
+                output_template, job.source_url, settings, detect_platform(job.source_url), cookies_file
+            )
             errors: list[str] = []
             downloaded_file: Path | None = None
 
