@@ -54,6 +54,14 @@ docker compose up --build
   - actualizar la imagen para tomar una version mas reciente de `yt-dlp`
   - verificar que `curl-cffi` este instalado dentro del contenedor
   - montar un `cookies.txt` opcional en `YT_DLP_COOKIES_FILE` para los casos que Meta no entregue bien el media URL de forma anonima
+  - configurar `YT_DLP_PROXY` cuando la IP del servidor ya este limitada por Instagram
+
+## Operacion recomendada para Instagram
+
+- Si quieres una tasa de exito alta con reels publicos, prepara al menos una de estas dos opciones:
+  - `YT_DLP_COOKIES_FILE` apuntando a un `cookies.txt` vigente exportado desde una sesion real de Instagram
+  - `YT_DLP_PROXY` apuntando a una IP/proxy limpia que no este limitada por Meta
+- Sin cookies ni proxy, la descarga anonima de Instagram debe considerarse opportunista: algunos enlaces funcionaran y otros no.
 
 ## Nota de cumplimiento
 

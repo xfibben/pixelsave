@@ -31,6 +31,8 @@ class Settings(BaseSettings):
     yt_dlp_retries: int = 3
     yt_dlp_impersonate: str | None = "chrome"
     yt_dlp_cookies_file: str | None = None
+    yt_dlp_proxy: str | None = None
+    yt_dlp_source_address: str | None = None
     instagram_app_id: str = "936619743392459"
 
     @property

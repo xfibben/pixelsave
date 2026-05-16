@@ -68,6 +68,10 @@ def _common_command(output_template: Path, source_url: str, settings) -> list[st
         command.extend(["--impersonate", settings.yt_dlp_impersonate])
     if settings.yt_dlp_cookies_file:
         command.extend(["--cookies", settings.yt_dlp_cookies_file])
+    if settings.yt_dlp_proxy:
+        command.extend(["--proxy", settings.yt_dlp_proxy])
+    if settings.yt_dlp_source_address:
+        command.extend(["--source-address", settings.yt_dlp_source_address])
     command.append(source_url)
     return command
 
@@ -97,6 +101,25 @@ def _platform_attempts(output_template: Path, source_url: str, settings, platfor
         attempts.insert(0, ("instagram-web", instagram))
 
     return attempts
+
+
+def _normalize_failure(platform: str, details: str) -> str:
+    normalized = details.lower()
+    if platform == "instagram":
+        if "login required" in normalized or "requested content is not available" in normalized:
+            return (
+                "Instagram bloqueo esta descarga para acceso anonimo. "
+                "Necesitas configurar cookies validas en YT_DLP_COOKIES_FILE o salir por otra IP/proxy en "
+                "YT_DLP_PROXY. Detalle tecnico:\n\n"
+                f"{details}"
+            )
+        if "rate-limit" in normalized or "too many requests" in normalized or "http error 429" in normalized:
+            return (
+                "Instagram limito temporalmente la IP del servidor. "
+                "Prueba con un proxy/IP distinta en YT_DLP_PROXY o espera a que el bloqueo caduque. Detalle tecnico:\n\n"
+                f"{details}"
+            )
+    return details
 
 
 def _set_job_status(db: Session, job: DownloadJob, status: str, error_message: str | None = None) -> None:
@@ -147,7 +170,8 @@ def process_job(job_id: str) -> None:
                 errors.append(f"[{label}] {combined_output or 'yt-dlp fallo sin devolver error legible'}")
 
             if downloaded_file is None:
-                raise RuntimeError("\n\n".join(errors) or "yt-dlp fallo sin devolver error legible")
+                details = "\n\n".join(errors) or "yt-dlp fallo sin devolver error legible"
+                raise RuntimeError(_normalize_failure(job.platform, details))
 
             if not downloaded_file.exists():
                 raise RuntimeError("El archivo descargado no existe despues de yt-dlp")
