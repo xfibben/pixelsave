@@ -27,15 +27,12 @@ class Settings(BaseSettings):
     cors_origins: str = Field(default="http://localhost:3000")
 
     max_job_age_hours: int = 24
-    yt_dlp_timeout_seconds: int = 900
-    yt_dlp_retries: int = 3
-    yt_dlp_impersonate: str | None = "chrome"
     yt_dlp_cookies_file: str | None = None
     yt_dlp_cookies_text: str | None = None
     yt_dlp_cookies_base64: str | None = None
     yt_dlp_proxy: str | None = None
-    yt_dlp_source_address: str | None = None
-    instagram_app_id: str = "936619743392459"
+    browser_timeout_seconds: int = 90
+    browser_wait_after_load_ms: int = 4000
 
     @property
     def cors_origin_list(self) -> list[str]:

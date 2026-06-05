@@ -6,4 +6,4 @@ redis==7.4.0
 rq==2.8.0
 sqlalchemy==2.0.49
 uvicorn[standard]==0.46.0
-yt-dlp[curl-cffi]==2026.3.17
+playwright==1.54.0

@@ -6,7 +6,7 @@ MVP dockerizado para gestionar descargas de medios publicos mediante jobs en seg
 
 - `web`: Next.js 15.5.2 + React 19.1.1
 - `api`: FastAPI 0.136.1
-- `worker`: RQ 2.8.0 + `yt-dlp` 2026.3.17 + `ffmpeg`
+- `worker`: RQ 2.8.0 + Playwright Chromium + `ffmpeg`
 - `redis`: cola de jobs
 - `postgres`: persistencia
 - `minio`: almacenamiento S3-compatible
@@ -42,27 +42,22 @@ docker compose up --build
 
 - Solo pensado para contenido publico.
 - No maneja login interactivo ni cookies de navegador del host.
-- Se puede configurar un `cookies.txt` opcional via `YT_DLP_COOKIES_FILE` para casos donde una plataforma degrade el acceso anonimo.
+- Se puede configurar un `cookies.txt` opcional via `YT_DLP_COOKIES_FILE`, `YT_DLP_COOKIES_TEXT` o `YT_DLP_COOKIES_BASE64`.
 - No hay autenticacion ni rate limiting todavia.
 - La separacion por "usuario" es por navegador/dispositivo mediante un identificador local persistente.
 - Los jobs y archivos expiran a las 24 horas.
 
-## Notas para Instagram
+## Resolver de Medios
 
-- El worker ahora usa `yt-dlp` con `impersonation`, reintentos y headers web especificos de Instagram para mejorar la descarga anonima de reels y posts publicos.
-- Si Instagram responde con `login required`, `rate-limit reached` o `unable to extract video url`, lo siguiente a revisar es:
-  - actualizar la imagen para tomar una version mas reciente de `yt-dlp`
-  - verificar que `curl-cffi` este instalado dentro del contenedor
-  - montar un `cookies.txt` opcional en `YT_DLP_COOKIES_FILE` para los casos que Meta no entregue bien el media URL de forma anonima
-  - configurar `YT_DLP_PROXY` cuando la IP del servidor ya este limitada por Instagram
-
-## Operacion recomendada para Instagram
-
-- Si quieres una tasa de exito alta con reels publicos, prepara al menos una de estas dos opciones:
-  - `YT_DLP_COOKIES_FILE` apuntando a un `cookies.txt` vigente exportado desde una sesion real de Instagram
-  - `YT_DLP_COOKIES_TEXT` o `YT_DLP_COOKIES_BASE64` si tu plataforma de despliegue maneja mejor secretos por variables de entorno
-  - `YT_DLP_PROXY` apuntando a una IP/proxy limpia que no este limitada por Meta
-- Sin cookies ni proxy, la descarga anonima de Instagram debe considerarse opportunista: algunos enlaces funcionaran y otros no.
+- Todas las plataformas pasan por un resolver basado en Chromium headless con Playwright.
+- El resolver intenta detectar URLs directas de video/audio y manifests HLS/DASH desde el DOM y desde las respuestas de red.
+- Si detecta un archivo directo, lo descarga por HTTP.
+- Si detecta un stream `.m3u8` o `.mpd`, lo materializa con `ffmpeg`.
+- Si una plataforma exige login o limita la IP, revisa estas variables:
+  - `YT_DLP_COOKIES_FILE`, `YT_DLP_COOKIES_TEXT` o `YT_DLP_COOKIES_BASE64`
+  - `YT_DLP_PROXY`
+  - `BROWSER_TIMEOUT_SECONDS`
+  - `BROWSER_WAIT_AFTER_LOAD_MS`
 
 ## Nota de cumplimiento
 
